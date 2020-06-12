@@ -1,0 +1,33 @@
+<div class="image-thumbnail">
+  <div class="image-card" *ngFor="let game of games; let i=index;" (click)="selectGame(game, i)">
+
+    <img [ngStyle]="{'border':i === selected ? '1px solid grey' : 'none' }" [src]="game.src">
+    <p text-center>{{ game.name }}</p>
+  </div>
+
+</div>
+    <!-- <mat-carousel
+    timings="250ms ease-in"
+    [autoplay]="true"
+    interval="5000"
+    color="accent"
+    maxWidth="auto"
+    proportion="25"
+    slides="10"
+    [loop]="true"
+    [hideArrows]="false"
+    maintainAspectRatio="true"
+    [hideIndicators]="false"
+    [useKeyboard]="true"
+    [useMouseWheel]="false"
+    orientation="ltr"
+  >
+    <mat-carousel-slide
+      #matCarouselSlide
+      *ngFor="let slide of games; let i = index"
+      [image]="slide.src"
+      overlayColor="#00000040"
+      [hideOverlay]="false"
+    > <p >{{ slide.name }}</p></mat-carousel-slide>
+
+  </mat-carousel> -->

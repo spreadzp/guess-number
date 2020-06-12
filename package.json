@@ -2,12 +2,21 @@
   "name": "game-ngrx",
   "version": "0.0.0",
   "scripts": {
-    "ng": "ng",
+    "ng": "ng build --prod",
     "start": "ng serve",
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "serv": "cd json-server && json-server --watch db.json",
+    "waves-locale": "sudo docker run -d -p 6869:6869 wavesplatform/waves-private-node",
+    "explorer": "sudo docker run -d -e API_NODE_URL=http://localhost:6869 -e NODE_LIST=http://localhost:6869 -p 3000:80 wavesplatform/explorer",
+    "issue-tokens-transfer-to-gamers-deploy-contract": "npx surfboard test issue-token-test.js",
+    "tn": "npx surfboard test --env=testnet",
+    "18ru": "npx ng xi18n --i18n-locale ru",
+    "18zh": "npx ng xi18n --i18n-locale zh",
+    "test-guessNumber": "npx surfboard test guess-number-test.js",
+    "build-i18n": "for lang in en; do ng build --output-path=dist/$lang --aot --prod --base-href /$lang/ --i18n-file=src/app/localize/messages.$lang.xlf --i18n-format=xlf --i18n-locale=$lang; done"
   },
   "private": true,
   "dependencies": {
@@ -22,6 +31,7 @@
     "@angular/platform-browser-dynamic": "~9.1.11",
     "@angular/router": "~9.1.11",
     "@angular/service-worker": "~9.1.11",
+    "@ngmodule/material-carousel": "^0.6.0",
     "rxjs": "~6.5.4",
     "tslib": "^1.10.0",
     "zone.js": "~0.10.2"
@@ -30,10 +40,12 @@
     "@angular-devkit/build-angular": "~0.901.8",
     "@angular/cli": "~9.1.8",
     "@angular/compiler-cli": "~9.1.11",
-    "@types/node": "^12.11.1",
     "@types/jasmine": "~3.5.0",
     "@types/jasminewd2": "~2.0.3",
+    "@types/node": "^12.11.1",
+    "@waves/surfboard": "^1.11.7",
     "codelyzer": "^5.1.2",
+    "dotenv": "^8.2.0",
     "jasmine-core": "~3.5.0",
     "jasmine-spec-reporter": "~4.2.1",
     "karma": "~5.0.0",
@@ -42,6 +54,7 @@
     "karma-jasmine": "~3.0.1",
     "karma-jasmine-html-reporter": "^1.4.2",
     "protractor": "~7.0.0",
+    "replace-in-file": "^6.1.0",
     "ts-node": "~8.3.0",
     "tslint": "~6.1.0",
     "typescript": "~3.8.3"
