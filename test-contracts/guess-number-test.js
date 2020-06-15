@@ -22,7 +22,7 @@ describe("GAME test suite", async function () {
   let paymentAmount = 1 * wvs;
   // let preSellScript;
   const countTokens = "1000000000";
-  const idGameToken = "2o9YvWP2gJpu48NeemwdvtZ4YFxbwgahk5ngMcMPm2jF";
+  const idGameToken = "2DkRbxWwFZx4cpDYiogiUQ5nVKbAXYEALak36cUh7aTk";
 
   const accounts = {};
   before(async function () {
@@ -75,8 +75,11 @@ describe("GAME test suite", async function () {
         console.log('seedGamer3 :', seedGamer3);
         console.log('seedGamer2 :', seedGamer2);
         console.log('seedGamer1 :', seedGamer1);   */
-        const numberGame = await accountDataByKey("numberGame", address(owner3));
-        const bankGame = await accountDataByKey(numberGame.value +  "_BankOfGame", address(owner3));
+    const numberGame = await accountDataByKey("numberGame", address(owner3));
+    const bankGame = await accountDataByKey(
+      numberGame.value + "_BankOfGame",
+      address(owner3)
+    );
     await assetBalance(idGameToken, address(owner3)).then((assetBal) => {
       expect(assetBal).to.equal(bankGame.value);
     });
@@ -111,20 +114,19 @@ describe("GAME test suite", async function () {
 
   it("5 make Bet More", async function () {
     const numberGame = await accountDataByKey("numberGame", address(owner3));
-    console.log('numberGame More :>> ', numberGame);
+    console.log("numberGame More :>> ", numberGame);
     const numberRoundState = await accountDataByKey(
       "numberRound",
       address(owner3)
     );
     const t = numberGame.value.toString() + "_" + address(seedGamer2);
     const prev =
-      numberGame.value.toString() +
-      "_" +
-      (numberRoundState.value <= 1) ? numberRoundState.value : (numberRoundState.value - 1).toString() +
-      "_";
+      numberGame.value.toString() + "_" + (numberRoundState.value <= 1)
+        ? numberRoundState.value
+        : (numberRoundState.value - 1).toString() + "_";
     const rateGamerInGame = await accountDataByKey(t, address(owner3));
     console.log("prev :", prev);
-    console.log('rateGamerInGame :>> ', rateGamerInGame);
+    console.log("rateGamerInGame :>> ", rateGamerInGame);
     const lastWinnerPrefixState = await accountDataByKey(
       prev + "lastRoundWinner",
       address(owner3)
@@ -176,7 +178,7 @@ describe("GAME test suite", async function () {
       "_more_" +
       address(seedGamer2);
     const state = await stateChanges(iTxSet.id);
-    console.log('key :>> ', key);
+    console.log("key :>> ", key);
     console.log("stateChanges[0]makeBetMore :", state.data[0].key);
     const checkState = await accountDataByKey(key, address(owner3));
 
@@ -188,7 +190,7 @@ describe("GAME test suite", async function () {
 
   it("7 make Bet Less", async function () {
     const numberGame = await accountDataByKey("numberGame", address(owner3));
-    console.log('numberGame Less :>> ', numberGame);
+    console.log("numberGame Less :>> ", numberGame);
     //const numberRoundState = await accountDataByKey("numberRound", address(owner3));
     const t = numberGame.value.toString() + "_" + address(seedGamer1);
     const rateGamerInGame = await accountDataByKey(t, address(owner3));
@@ -198,10 +200,9 @@ describe("GAME test suite", async function () {
       address(owner3)
     );
     const prev =
-      numberGame.value.toString() +
-      "_" +
-      (numberRoundState.value <= 1) ? numberRoundState.value : (numberRoundState.value - 1).toString() +
-      "_";
+      numberGame.value.toString() + "_" + (numberRoundState.value <= 1)
+        ? numberRoundState.value
+        : (numberRoundState.value - 1).toString() + "_";
     console.log("prev :", prev);
     console.log("numberRoundState :", numberRoundState);
     const lastWinnerPrefixState = await accountDataByKey(
@@ -255,7 +256,7 @@ describe("GAME test suite", async function () {
       numberRoundState.value.toString() +
       "_less_" +
       address(seedGamer1);
-      console.log('key :>> ', key);
+    console.log("key :>> ", key);
     const state = await stateChanges(iTxSet.id);
     console.log("statemakeBetLess :", state);
     expect(state.data[0].key).to.equal(key);
@@ -332,10 +333,9 @@ describe("GAME test suite", async function () {
       "numberRound",
       address(owner3)
     );
-    console.log('numberRoundState :>> ', numberRoundState);
+    console.log("numberRoundState :>> ", numberRoundState);
     const countGamersState = await accountDataByKey(
-      numberGameState.value + '_' +
-      numberRoundState.value + "_countGamersUp",
+      numberGameState.value + "_" + numberRoundState.value + "_countGamersUp",
       address(owner3)
     );
     expect(countGamersState.value).to.be.at.least(0);
@@ -350,10 +350,9 @@ describe("GAME test suite", async function () {
       "numberRound",
       address(owner3)
     );
-    console.log('numberRoundState :>> ', numberRoundState);
+    console.log("numberRoundState :>> ", numberRoundState);
     const countGamersState = await accountDataByKey(
-      numberGameState.value + '_' +
-      numberRoundState.value + "_countGamersDown",
+      numberGameState.value + "_" + numberRoundState.value + "_countGamersDown",
       address(owner3)
     );
     expect(countGamersState.value).to.be.at.least(0);
@@ -441,7 +440,6 @@ describe("GAME test suite", async function () {
     console.log("state :", state);
   });
 
-
   it("18 Should start new round", async function () {
     const iTxSet = invokeScript(
       {
@@ -468,10 +466,8 @@ describe("GAME test suite", async function () {
       "numberGame",
       address(owner3)
     );
-    console.log('numberGameState.value :>> ', numberGameState.value);
-    if(numberGameState.value > 1) {
-
-
+    console.log("numberGameState.value :>> ", numberGameState.value);
+    if (numberGameState.value > 1) {
       // await accountDataByKey(numberGameState.value_WinnerSign + '_WinnerSign',
       //   address(owner3));
       const prevNumberGame = numberGameState.value - 1;
@@ -479,33 +475,65 @@ describe("GAME test suite", async function () {
         prevNumberGame + "_GameOver",
         address(owner3)
       );
-      console.log('GameOverState :>> ', GameOverState);
+      console.log("GameOverState :>> ", GameOverState);
 
-      const winnerSign = await accountDataByKey(prevNumberGame + "_WinnerSign",
-      address(owner3)
+      const winnerSign = await accountDataByKey(
+        prevNumberGame + "_WinnerSign",
+        address(owner3)
       );
-      console.log('winnerSign :>> ', winnerSign);
-      const hasWinner = await accountDataByKey(prevNumberGame + "_" + address(seedGamer2) + "_" + winnerSign.value,
-      address(owner3)
+      console.log("winnerSign :>> ", winnerSign);
+
+      const hasWinner = await accountDataByKey(
+        prevNumberGame +
+          "_" +
+          address(seedGamer2) +
+          "_" +
+          winnerSign.value +
+          "_HasPrize",
+        address(owner3)
       );
-      console.log('hasWinner :>> ', hasWinner);
+      console.log("hasWinner :>> ", hasWinner);
+      const valuePrize = await accountDataByKey(
+        prevNumberGame + "_PrizeValue",
+        address(owner3)
+      );
+      console.log("valuePrize :>> ", valuePrize);
+      if (hasWinner && hasWinner.value) {
         const iTxSet = invokeScript(
           {
             dApp: address(owner3),
             fee: 0.09 * wvs,
             call: {
               function: "withdraw",
-              args: [prevNumberGame],
+              args: [
+                {
+                  type: "string",
+                  value: prevNumberGame,
+                },
+              ],
             },
             payment: [],
           },
           seedGamer2
         );
-        console.log('iTxSet :>> ', iTxSet);
+        console.log("iTxSet :>> ", iTxSet);
         await broadcast(iTxSet);
-    await waitForTx(iTxSet.id);
-    const state = await stateChanges(iTxSet.id);
-    console.log("state :", state);
+        await waitForTx(iTxSet.id);
+        const state = await stateChanges(iTxSet.id);
+        console.log("state :", state);
+        const hasWinnerAfter = await accountDataByKey(
+          prevNumberGame +
+            "_" +
+            address(seedGamer1) +
+            "_" +
+            winnerSign.value +
+            "_HasPrize",
+          address(owner3)
+        );
+        console.log("hasWinnerAfter :>> ", hasWinnerAfter);
+      } else {
+        expect(true).to.equal(true);
+      }
     } else {
       expect(numberGameState.value).to.equal(1);
     }
@@ -516,7 +544,7 @@ describe("GAME test suite", async function () {
       "numberGame",
       address(owner3)
     );
-    if(numberGameState.value > 1) {
+    if (numberGameState.value > 1) {
       // await accountDataByKey(numberGameState.value_WinnerSign + '_WinnerSign',
       //   address(owner3));
       const prevNumberGame = numberGameState.value - 1;
@@ -524,44 +552,65 @@ describe("GAME test suite", async function () {
         prevNumberGame + "_GameOver",
         address(owner3)
       );
-      console.log('GameOverState :>> ', GameOverState);
+      console.log("GameOverState :>> ", GameOverState);
 
-      const winnerSign = await accountDataByKey(prevNumberGame + "_WinnerSign",
-      address(owner3)
+      const winnerSign = await accountDataByKey(
+        prevNumberGame + "_WinnerSign",
+        address(owner3)
       );
-      console.log('winnerSign :>> ', winnerSign);
-      const hasWinner = await accountDataByKey(prevNumberGame + "_" + address(seedGamer1) + "_" + winnerSign.value,
-      address(owner3)
+      console.log("winnerSign :>> ", winnerSign);
+      const hasWinner = await accountDataByKey(
+        prevNumberGame +
+          "_" +
+          address(seedGamer1) +
+          "_" +
+          winnerSign.value +
+          "_HasPrize",
+        address(owner3)
       );
-      console.log('hasWinner :>> ', hasWinner);
+      console.log("hasWinner :>> ", hasWinner);
 
-      const hasWinnerPrize = await accountDataByKey(
-      prevNumberGame + "_" + address(seedGamer1) + "_GetPrize",
-      address(owner3)
+      const valuePrize = await accountDataByKey(
+        prevNumberGame + "_PrizeValue",
+        address(owner3)
       );
-      console.log('hasWinnerPrize :>> ', hasWinnerPrize);
-
-      const valuePrize = await accountDataByKey(prevNumberGame  + "_ValuePrize",
-      address(owner3)
-      );
-      console.log('valuePrize :>> ', valuePrize);
+      console.log("valuePrize :>> ", valuePrize);
+      if (hasWinner && hasWinner.value) {
         const iTxSet = invokeScript(
           {
             dApp: address(owner3),
             fee: 0.09 * wvs,
             call: {
               function: "withdraw",
-              args: [prevNumberGame],
+              args: [
+                {
+                  type: "string",
+                  value: prevNumberGame,
+                },
+              ],
             },
             payment: [],
           },
           seedGamer1
         );
-        console.log('iTxSet :>> ', iTxSet);
+        console.log("iTxSet :>> ", iTxSet);
         await broadcast(iTxSet);
-    await waitForTx(iTxSet.id);
-    const state = await stateChanges(iTxSet.id);
-    console.log("state :", state);
+        await waitForTx(iTxSet.id);
+        const state = await stateChanges(iTxSet.id);
+        console.log("state :", state);
+        const hasWinnerAfter = await accountDataByKey(
+          prevNumberGame +
+            "_" +
+            address(seedGamer1) +
+            "_" +
+            winnerSign.value +
+            "_HasPrize",
+          address(owner3)
+        );
+        console.log("hasWinnerAfter :>> ", hasWinnerAfter);
+      } else {
+        expect(true).to.equal(true);
+      }
     } else {
       expect(numberGameState.value).to.equal(1);
     }
