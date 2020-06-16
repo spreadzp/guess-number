@@ -8,6 +8,7 @@ describe("GAME test suite", async function () {
   let companyScript;
   let companyTx;
   let seedInv1 = "waves private node seed with waves tokens";
+  const ownerContract = "hjkghgjhkgjhkgjhkkda";
   const owner4 = "hjkghgjhkgjhkgjhkkdajhkljh";
   const owner3 = "hjkghgjhkgjhkgjhkkdaerwe";
   let seed2 =
@@ -22,7 +23,7 @@ describe("GAME test suite", async function () {
   let paymentAmount = 1 * wvs;
   // let preSellScript;
   const countTokens = "1000000000";
-  const idGameToken = "2DkRbxWwFZx4cpDYiogiUQ5nVKbAXYEALak36cUh7aTk";
+  const idGameToken = "HzQ8zc4PDrPkhiiT5sKrzqhMaEESETH4cjzdBiJMdyE";
 
   const accounts = {};
   before(async function () {
@@ -483,7 +484,7 @@ describe("GAME test suite", async function () {
       );
       console.log("winnerSign :>> ", winnerSign);
 
-      const hasWinner = await accountDataByKey(
+      const hasWinner = (winnerSign) ? await accountDataByKey(
         prevNumberGame +
           "_" +
           address(seedGamer2) +
@@ -491,7 +492,7 @@ describe("GAME test suite", async function () {
           winnerSign.value +
           "_HasPrize",
         address(owner3)
-      );
+      ) : null;
       console.log("hasWinner :>> ", hasWinner);
       const valuePrize = await accountDataByKey(
         prevNumberGame + "_PrizeValue",
@@ -559,7 +560,7 @@ describe("GAME test suite", async function () {
         address(owner3)
       );
       console.log("winnerSign :>> ", winnerSign);
-      const hasWinner = await accountDataByKey(
+      const hasWinner = (winnerSign) ? await accountDataByKey(
         prevNumberGame +
           "_" +
           address(seedGamer1) +
@@ -567,7 +568,7 @@ describe("GAME test suite", async function () {
           winnerSign.value +
           "_HasPrize",
         address(owner3)
-      );
+      ) : null;
       console.log("hasWinner :>> ", hasWinner);
 
       const valuePrize = await accountDataByKey(
@@ -613,6 +614,51 @@ describe("GAME test suite", async function () {
       }
     } else {
       expect(numberGameState.value).to.equal(1);
+    }
+  });
+
+  it("21 should success withdraw owner account", async function () {
+    const numberGameState = await accountDataByKey(
+      "numberGame",
+      address(owner3)
+    );
+    if (numberGameState && numberGameState.value > 1) {
+      // await accountDataByKey(numberGameState.value_WinnerSign + '_WinnerSign',
+      //   address(owner3));
+      const prevNumberGame = numberGameState.value - 1;
+      const ownerIncomeState = await accountDataByKey(
+        prevNumberGame + "_IncomeOfOwner",
+        address(owner3)
+      ); 
+      console.log("ownerIncomeState :>> ", ownerIncomeState);
+      if (ownerIncomeState && ownerIncomeState.value > 0) {
+        const iTxSet = invokeScript(
+          {
+            dApp: address(owner3),
+            fee: 0.09 * wvs,
+            call: {
+              function: "withdraw",
+              args: [
+                {
+                  type: "string",
+                  value: prevNumberGame,
+                },
+              ],
+            },
+            payment: [],
+          },
+          ownerContract
+        );
+        console.log("iTxSet :>> ", iTxSet);
+        await broadcast(iTxSet);
+        await waitForTx(iTxSet.id);
+        const state = await stateChanges(iTxSet.id);
+        console.log("state :", state); 
+      } else {
+        expect(true).to.equal(true);
+      }
+    } else {
+      expect(true).to.equal(true);
     }
   });
 });

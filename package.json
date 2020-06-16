@@ -18,7 +18,8 @@
     "18ru": "npx ng xi18n --i18n-locale ru",
     "18zh": "npx ng xi18n --i18n-locale zh",
     "test-guessNumber": "npx surfboard test guess-number-test.js",
-    "build-i18n": "for lang in en; do ng build --output-path=dist/$lang --aot --prod --base-href /$lang/ --i18n-file=src/app/localize/messages.$lang.xlf --i18n-format=xlf --i18n-locale=$lang; done"
+    "build-i18n": "for lang in en; do ng build --output-path=dist/$lang --aot --prod --base-href /$lang/ --i18n-file=src/app/localize/messages.$lang.xlf --i18n-format=xlf --i18n-locale=$lang; done",
+    "check-free-port": "sudo nc localhost 56733 < /dev/null; echo $?"
   },
   "private": true,
   "dependencies": {

@@ -8,7 +8,7 @@ describe("GAME test suite", async function () {
   let companyScript;
   let companyTx;
   let seedInv1 = "waves private node seed with waves tokens";
-  const owner2 = "hjkghgjhkgjhkgjhkkda";
+  const ownerContract = "hjkghgjhkgjhkgjhkkda";
   const issuerToken = "hjkghgjhkgjhkgjhkkdaerwewe";
   const owner3 = "hjkghgjhkgjhkgjhkkdaerwe";
   let seed2 =
@@ -60,6 +60,15 @@ describe("GAME test suite", async function () {
     );
     await broadcast(sendTokensContractOwner);
     await waitForTx(sendTokensContractOwner.id);
+
+    const contOwn = address(ownerContract);
+    console.log("contOwn :", contOwn);
+    const sendTokensContractOwner1 = await transfer(
+      { recipient: contOwn, amount: 1 * wvs, fee: 0.05 * wvs },
+      seedInv1
+    );
+    await broadcast(sendTokensContractOwner1);
+    await waitForTx(sendTokensContractOwner1.id)
   });
   it("1 can success issue tokens", async function () {
     const issueParam = {
@@ -110,9 +119,9 @@ describe("GAME test suite", async function () {
   it("3 replace id token", async function () {
     const optionsContract = {
       files: 'contracts/guessnumber.ride',
-      from: /let idGameToken =  base58('.*)/g,
-      to: `let idGameToken =  base58'${assetId}'`,
-    };
+      from: /let idGameToken = base58('.*)/g,
+      to: `let idGameToken = base58'${assetId}'`,
+    }; 
     const res = await setNewIdToken(optionsContract);
     expect(res).to.equal(true);
     const optionsTestContract = {
@@ -123,7 +132,25 @@ describe("GAME test suite", async function () {
     const resTest = await setNewIdToken(optionsTestContract);
     expect(resTest).to.equal(true);
   });
-  it("4 deploy contract", async function () {
+  it("4 replace ownerAddress", async function () {
+    const co = address(ownerContract);
+    console.log('co :>> ', co);
+    const optionsContract = {
+      files: 'contracts/guessnumber.ride',
+      from: /let addressOwner = (.*)/g,
+      to: `let addressOwner = "${co}"`,
+    }; ;
+    const res = await setNewIdToken(optionsContract); 
+    expect(res).to.equal(true);
+    // const optionsTestContract = {
+    //   files: 'test-contracts/guess-number-test.js',
+    //   from: /const idGameToken = (".*)/g,
+    //   to: `const idGameToken = "${assetId}";`,
+    // };
+    // const resTest = await setNewIdToken(optionsTestContract);
+    // expect(resTest).to.equal(true);
+  });
+  it("5 deploy contract", async function () {
   companyScript = file('guessnumber.ride');
         //console.log('companyScript :', companyScript);
        const compiledCompany = compile(companyScript);

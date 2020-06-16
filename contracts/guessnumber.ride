@@ -3,7 +3,8 @@
 {-# SCRIPT_TYPE ACCOUNT #-}
 
 let startNewRoundHeight = 5
-let idGameToken =  base58'2DkRbxWwFZx4cpDYiogiUQ5nVKbAXYEALak36cUh7aTk'
+let idGameToken = base58'HzQ8zc4PDrPkhiiT5sKrzqhMaEESETH4cjzdBiJMdyE'
+let addressOwner = "3M6crppcfPBXitdAxxdT94QnqnCgo2S4gdy"
 let minBet = 100000
 let maxNumberRound = 8
 
@@ -150,10 +151,13 @@ func saveDataStartGame(numberGame: Int, isGameStarted: Boolean, numberOfRound: I
 
 func saveFinishGame(winnerSign: String, prizeValue: Int, newNumberOfRound: Int) = {
   let currentNumberGame = getIntValue("numberGame", 1).toString()
+  let bankTheGame = getIntValue(currentNumberGame + "_BankOfGame", 0)
+  let incomeOfOwner = bankTheGame / 10
   WriteSet([
     DataEntry(currentNumberGame + "_GameOver", true),
     DataEntry(currentNumberGame + "_WinnerSign", winnerSign),
     DataEntry(currentNumberGame + "_PrizeValue", prizeValue),
+    DataEntry(currentNumberGame + "_IncomeOfOwner", incomeOfOwner),
     DataEntry("numberRound", newNumberOfRound),
     DataEntry("numberGame", getNextNumberGame())
   ])
@@ -248,7 +252,7 @@ func makeBetMore() = {
 
 @Callable(i)
 func withdraw(numberGame: String) = {
-  let addressGamer = toBase58String(i.caller.bytes)
+  let addressOfRecipient = toBase58String(i.caller.bytes)
   # проверяем закончилась ли эта игра, есть ли этот адрес в победителях, не забрал ли уже этот
   # адрес приз из этой игры, получаем значение приза проверяем больше ли баланс чем приз, и пересылаем на адрес,
   # отнимаем из общей суммы призов, помечаем что адрес получил приз
@@ -258,22 +262,34 @@ func withdraw(numberGame: String) = {
     case a:String => a
     case _ => ""
   }
-  # проработать как получить адрес победителя, создавать на последнем раунде запись адресов
-  # орел/решка и теперь запрашивать по ключам номера игры и победной решки/_HasPrizen + "_HasPrize", false)
-  let valuePrize = getIntValue(numberGame + "_PrizeValue",  0)
-  let bankOfGame = getIntValue(numberGame + "_BankOfGame",  0)
-  let isHasPrize = getBoolValue(numberGame + "_" + addressGamer + "_" + winnerSign + "_HasPrize", false)
-  if(isGameOver && isHasPrize && bankOfGame >= valuePrize) then
-    let sumBankAfterWithdraw = bankOfGame - valuePrize
+  # change address owner have to not equals this
+  if(addressOfRecipient == addressOwner) then
+    let incomeOfOwner = getIntValue(numberGame + "_IncomeOfOwner",  0)
     ScriptResult(
-      WriteSet([
-              DataEntry(numberGame + "_" + addressGamer + "_" + winnerSign + "_HasPrize", false),
-              DataEntry(numberGame + "_BankOfGame", sumBankAfterWithdraw)
-          ]),
-      TransferSet([ScriptTransfer(i.caller, valuePrize, idGameToken)])
-    )
+        WriteSet([
+                DataEntry(numberGame + "_IncomeOfOwner", 0)
+            ]),
+        TransferSet([ScriptTransfer(i.caller, incomeOfOwner, idGameToken)])
+      )
+  else if(i.caller != this) then
+    # проработать как получить адрес победителя, создавать на последнем раунде запись адресов
+    # орел/решка и теперь запрашивать по ключам номера игры и победной решки/_HasPrizen + "_HasPrize", false)
+    let valuePrize = getIntValue(numberGame + "_PrizeValue",  0)
+    let bankOfGame = getIntValue(numberGame + "_BankOfGame",  0)
+    let isHasPrize = getBoolValue(numberGame + "_" + addressOfRecipient + "_" + winnerSign + "_HasPrize", false)
+    if(isGameOver && isHasPrize && bankOfGame >= valuePrize) then
+      let sumBankAfterWithdraw = bankOfGame - valuePrize
+      ScriptResult(
+        WriteSet([
+                DataEntry(numberGame + "_" + addressOfRecipient + "_" + winnerSign + "_HasPrize", false),
+                DataEntry(numberGame + "_BankOfGame", sumBankAfterWithdraw)
+            ]),
+        TransferSet([ScriptTransfer(i.caller, valuePrize, idGameToken)])
+      )
+    else
+      throw("The address is not the winner" + isGameOver.toString() + isHasPrize.toString() +  bankOfGame.toString() + valuePrize.toString() )
   else
-    throw("The address is not the winner" + isGameOver.toString() + isHasPrize.toString() +  bankOfGame.toString() + valuePrize.toString() )
+    throw("Some error in withdraw operation")
 }
 
 @Verifier(tx)
