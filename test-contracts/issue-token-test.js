@@ -17,7 +17,7 @@ describe("GAME test suite", async function () {
     "yard antique adult age neglect distance patch reopen pulp scrub clean muffin helmet robot trap";
   let seedGamer2 =
     "weather conduct sentence below fix love crucial rabbit setup hair seed ridge mammal crush nest";
-  let seedGamer3 =
+    let seedGamer3 =
     "perfect decline slice surface culture apology head merit bench shed meat melt";
   let assetId;
   let paymentAmount = 1 * wvs;
@@ -69,6 +69,15 @@ describe("GAME test suite", async function () {
     );
     await broadcast(sendTokensContractOwner1);
     await waitForTx(sendTokensContractOwner1.id)
+
+    const gam3 = address(seedGamer3);
+    console.log("contOwn :", gam3);
+    const sendTokensGamer3 = await transfer(
+      { recipient: gam3, amount: 10 * wvs, fee: 0.05 * wvs },
+      seedInv1
+    );
+    await broadcast(sendTokensGamer3);
+    await waitForTx(sendTokensGamer3.id)
   });
   it("1 can success issue tokens", async function () {
     const issueParam = {
@@ -103,6 +112,7 @@ describe("GAME test suite", async function () {
     );
     await broadcast(sendTokensG1);
     await waitForTx(sendTokensG1.id);
+
     const recipient2 = address(seedGamer2);
     const sendTokensG2 = await transfer(
       {
@@ -115,6 +125,19 @@ describe("GAME test suite", async function () {
     );
     await broadcast(sendTokensG2);
     await waitForTx(sendTokensG2.id);
+
+    const recipient3 = address(seedGamer3);
+    const sendTokensG3 = await transfer(
+      {
+        recipient: recipient3,
+        amount: 10000 * wvs,
+        assetId: assetId,
+        fee: 0.05 * wvs,
+      },
+      issuerToken
+    );
+    await broadcast(sendTokensG3);
+    await waitForTx(sendTokensG3.id);
   });
   it("3 replace id token", async function () {
     const optionsContract = {

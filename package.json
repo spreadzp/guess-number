@@ -2,7 +2,7 @@
   "name": "game-ngrx",
   "version": "0.0.0",
   "scripts": {
-    "ng": "ng build --prod",
+    "gen-pwa": "ng build --prod && cd dist/game-ngrx && http-server -p 3456",
     "start": "ng serve",
     "build": "ng build",
     "test": "ng test",
