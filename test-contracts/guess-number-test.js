@@ -2,7 +2,7 @@ const wvs = 10 ** 8;
 require("dotenv").config();
 
 describe("GAME test suite", async function () {
-  this.timeout(600000);
+  this.timeout(30000);
   let dappTx;
   let freezeScript;
   let companyScript;
@@ -23,7 +23,7 @@ describe("GAME test suite", async function () {
   let paymentAmount = 1 * wvs;
   // let preSellScript;
   const countTokens = "1000000000";
-  const idGameToken = "GHNWENeTrbHDb6yog9unotnSJtjdUSoidgb28Wu77ika";
+  const idGameToken = "FVtcQLNgBqin9vfHbpSXCpm91Hy64D4q1jkRUAgUNvWV";
 
   const accounts = {};
   before(async function () {
@@ -76,7 +76,7 @@ describe("GAME test suite", async function () {
         console.log('seedGamer3 :', seedGamer3);
         console.log('seedGamer2 :', seedGamer2);
         console.log('seedGamer1 :', seedGamer1);   */
-        // 
+        //
     const numberGame = await accountDataByKey("numberGame", address(owner3));
     const bankGame = await accountDataByKey(
       numberGame.value + "_BankOfGame",
@@ -672,11 +672,16 @@ describe("GAME test suite", async function () {
     const maxNumberRound = 7;
     const ownerAddress = address(owner3);
   console.log('ownerAddress :>> ', ownerAddress);
+  const numberRoundState = await accountDataByKey(
+    "numberRound",
+    ownerAddress
+  );
+  console.log('numberRoundState :>> ', numberRoundState);
     const numberGameState = await accountDataByKey(
       "numberGame",
       ownerAddress
     );
-    if (numberGameState && numberGameState.value > 1) {
+    if (numberRoundState && numberRoundState.value > 1 && numberGameState.value > 1) {
       // await accountDataByKey(numberGameState.value_WinnerSign + '_WinnerSign',
       //   address(owner3));
       const addressGamer = address(seedGamer3);
@@ -698,12 +703,12 @@ describe("GAME test suite", async function () {
         prevNumberGame + "_" + addressGamer,
         ownerAddress
       );
-      const betGamer = (!sumGamerBets) ? 0 : sumGamerBets;
-      console.log("sumGamerBets :>> ", betGamer);
+      const betGamer = (!sumGamerBets && !sumGamerBets.value) ? {"value": 0} : sumGamerBets;
+      console.log("sumGamerBets :>> ", betGamer.value);
       if (sumOfBank && sumOfBank.value > 0) {
         const maxPmt =
-          firstBet * 7 > betGamer
-            ? firstBet * 7 - betGamer
+          firstBet * 7.1 > betGamer.value
+            ? firstBet * 7.1 - betGamer.value
             : firstBet;
             console.log('maxPmt :>> ', maxPmt);
         const iTxSet = invokeScript(
@@ -732,6 +737,10 @@ describe("GAME test suite", async function () {
                 {
                   type: "integer",
                   value: sumOfBank.value,
+                },
+                {
+                  type: "boolean",
+                  value: false,
                 }
               ],
             },
@@ -748,6 +757,7 @@ describe("GAME test suite", async function () {
         expect(true).to.equal(true);
       }
     } else {
+      console.log('its 1 round :>> ');
       expect(true).to.equal(true);
     }
   });

@@ -3,10 +3,11 @@
 {-# SCRIPT_TYPE ACCOUNT #-}
 
 let startNewRoundHeight = 5
-let idGameToken = base58'GHNWENeTrbHDb6yog9unotnSJtjdUSoidgb28Wu77ika'
+let idGameToken = base58'FVtcQLNgBqin9vfHbpSXCpm91Hy64D4q1jkRUAgUNvWV'
 let addressOwner = "3M6crppcfPBXitdAxxdT94QnqnCgo2S4gdy"
 let minBet = 100000
 let maxNumberRound = 8
+let maxPaymentTheGame = 7100000000
 
 # create random hash for last round
 func randomizer(inv: Invocation) = {
@@ -41,9 +42,9 @@ func getCurrentGameAndRound() = {
 }
 
 func getCurrentGameAndPrevRound() = {
-  let prevRound = getIntValue("numberRound", 1) - 1
-  getIntValue("numberGame", 1).toString() + "_" + prevRound.toString() + "_"
+  getIntValue("numberGame", 1).toString() + "_" + getPrevNumberGame().toString() + "_"
 }
+
 func saveWinnerInfoPrevRound(currRound: Int, winnerFlag: String, randhash: Int) = {
    WriteSet([
       DataEntry(getCurrentGameAndPrevRound() + "lastRoundWinner", getCurrentGameAndPrevRound() + winnerFlag ),
@@ -53,6 +54,7 @@ func saveWinnerInfoPrevRound(currRound: Int, winnerFlag: String, randhash: Int) 
       ]
     )
 }
+
 func setWinnersPrevRound(currRound: Int, randhash: Int) = {
   if (randhash < 500) then
     saveWinnerInfoPrevRound(currRound,"less_", randhash)
@@ -63,6 +65,7 @@ func setWinnersPrevRound(currRound: Int, randhash: Int) = {
 func getGamerBet(addressGamer: String, direction: String) = {
   getIntValue(getCurrentGameAndRound() + "_" + direction + "_" + addressGamer, 0)
 }
+
 func defineWinnerSign(hash: Int) = {
   if(hash <= 500) then
     "tails"
@@ -77,15 +80,20 @@ func defineCoinPart(part: String) = {
     "eagle"
 }
 
-func finalRoundBet(directionRate: String, pmt: Int, addressGamer: String, directionGamer: String,
- numberGame: String, numOfGamersCurrDirection: Int, sumOfBank: Int, sumGamerBets: Int) = {
+func finalRoundBet(directionRate: String, payment: Int, addressGamer: String, directionGamer: String,
+  numberGame: String, numOfGamersCurrDirection: Int, sumOfBank: Int, sumGamerBets: Int, isLastRound: Boolean) = {
     let countPrizers = getIntValue(numberGame + "_" + defineCoinPart(directionRate) + "_Prizers", 0)
     let numberGameAndLastRound = numberGame + "_" + (maxNumberRound - 1).toString()
+    let gamerBetsBefore = getIntValue(numberGame + "_" + addressGamer, 0)
+    let differentToMax = maxPaymentTheGame  - (gamerBetsBefore + payment)
+    if (isLastRound == false && differentToMax > 0) then
+        throw("payment is too small. You need to add tokens" + (differentToMax).toString())
+    else
       WriteSet([
-        DataEntry(numberGameAndLastRound + directionRate + addressGamer, pmt),
+        DataEntry(numberGameAndLastRound + directionRate + addressGamer, payment),
         DataEntry(numberGameAndLastRound + directionGamer, numOfGamersCurrDirection + 1),
-        DataEntry(numberGame + "_BankOfGame", sumOfBank + pmt),
-        DataEntry(numberGame + "_" + addressGamer, sumGamerBets + pmt),
+        DataEntry(numberGame + "_BankOfGame", sumOfBank + payment),
+        DataEntry(numberGame + "_" + addressGamer, sumGamerBets + payment),
         DataEntry(numberGame + "_" + addressGamer + "_" + defineCoinPart(directionRate) + "_HasPrize", true),
         DataEntry(numberGame + "_" + defineCoinPart(directionRate) + "_Prizers", countPrizers + 1)
       ])
@@ -96,10 +104,10 @@ func setGamerBet(addressGamer: String, directionRate: String, directionGamer: St
     let numberGame = getIntValue("numberGame", 1).toString()
     let numOfGamersCurrDirection = getIntValue(getCurrentGameAndRound() + directionGamer, 0)
     let sumOfBank = getIntValue(numberGame + "_BankOfGame", 0)
-    let sumGamerBets = getIntValue(numberGame + "_" + addressGamer, 0)    
+    let sumGamerBets = getIntValue(numberGame + "_" + addressGamer, 0)
     if(maxNumberRound == newNumberOfRound + 1) then
       finalRoundBet(directionRate, currentBet, addressGamer,
-        directionGamer, numberGame, numOfGamersCurrDirection, sumOfBank, sumGamerBets)
+        directionGamer, numberGame, numOfGamersCurrDirection, sumOfBank, sumGamerBets, true)
     else
     WriteSet([
       DataEntry(getCurrentGameAndRound() + directionRate + addressGamer, currentBet),
@@ -110,7 +118,6 @@ func setGamerBet(addressGamer: String, directionRate: String, directionGamer: St
 }
 
 func getBet(round: Int, addressGamer: String) =  {
-
   if(round > 1 ) then {
     let winnerOfPrevRound = getCurrentGameAndPrevRound()
     let winnerBetFromPrevRound = getIntValue(winnerOfPrevRound + addressGamer, 0)
@@ -140,6 +147,7 @@ func getNextNumberGame() = {
     case _ => 1
   }
 }
+
 func countValuePrize(winnerSign: String) = {
     let currentNumberGame = getIntValue("numberGame", 1).toString()
     let countPrizers = getIntValue(currentNumberGame + "_" + winnerSign + "_Prizers", 0)
@@ -169,14 +177,28 @@ func saveFinishGame(winnerSign: String, prizeValue: Int, newNumberOfRound: Int) 
     DataEntry("numberGame", getNextNumberGame())
   ])
 }
+
+func getOppositeDirectionName(direction: String) = {
+  if(direction == "_less_") then 
+    "_more_"
+  else 
+    "_less_"
+}
+
 @Callable(i)
 func maxBet(directionRate: String,directionGamer: String,
- numberGame: String, numOfGamersCurrDirection: Int, sumOfBank: Int) = {
-  let pmt = extract(i.payment)
+ numberGame: String, numOfGamersCurrDirection: Int, sumOfBank: Int, isLastRound: Boolean) = {
+   let pmt = extract(i.payment)
   let addressGamer = toBase58String(i.caller.bytes)
-  finalRoundBet(directionRate, pmt.amount, addressGamer, directionGamer,
-    numberGame, numOfGamersCurrDirection, sumOfBank, pmt.amount)
+  let oppositeDirection = getOppositeDirectionName(directionRate)
+  let gamerOppositeBet = getIntValue(numberGame + "_" + (maxNumberRound - 1).toString()+ "_" + addressGamer + "_" + oppositeDirection, 0)
+  if(gamerOppositeBet == 0) then
+    finalRoundBet(directionRate, pmt.amount, addressGamer, directionGamer,
+      numberGame, numOfGamersCurrDirection, sumOfBank, pmt.amount, isLastRound)
+  else
+    throw("The gamer already made opposite bet ")    
 }
+
 @Callable(i)
 func startRound() = {
   let numberOfRound = getIntValue("numberRound", 1)
@@ -187,10 +209,6 @@ func startRound() = {
   if(i.caller != this) then
     throw("Only owner can start the game.")
   else if( numberOfRound == 1 && !isOppositeRate(numberOfRound) && i.caller == this && !isGameStarted ) then
-
-    #invoke script
-    # setGameOver(currentNumberGame)  ?
-    # let newNumberGame = currentNumberGame
     saveDataStartGame(currentNumberGame, !isGameStarted, numberOfRound)
   else if (i.caller == this && isOppositeRate(prev) && !isGameStarted) then
     setWinnersPrevRound(numberOfRound, randhash.toInt() % 1000)
@@ -212,8 +230,6 @@ func stopGame() = {
   #isOppositeRate() &&  && !isGameStarted
   let lastRound = getIntValue("numberRound", 1)
   let newNumberOfRound = (lastRound + 1) % maxNumberRound
-
-
   if(i.caller == this && newNumberOfRound > 1 && isOppositeRate(lastRound)) then
     WriteSet([
       DataEntry("numberRound", newNumberOfRound)
@@ -279,7 +295,6 @@ func withdraw(numberGame: String) = {
     case a:String => a
     case _ => ""
   }
-  # change address owner have to not equals this
   if(addressOfRecipient == addressOwner) then
     let incomeOfOwner = getIntValue(numberGame + "_IncomeOfOwner",  0)
     ScriptResult(
@@ -289,8 +304,6 @@ func withdraw(numberGame: String) = {
         TransferSet([ScriptTransfer(i.caller, incomeOfOwner, idGameToken)])
       )
   else if(i.caller != this) then
-    # проработать как получить адрес победителя, создавать на последнем раунде запись адресов
-    # орел/решка и теперь запрашивать по ключам номера игры и победной решки/_HasPrizen + "_HasPrize", false)
     let valuePrize = getIntValue(numberGame + "_PrizeValue",  0)
     let bankOfGame = getIntValue(numberGame + "_BankOfGame",  0)
     let isHasPrize = getBoolValue(numberGame + "_" + addressOfRecipient + "_" + winnerSign + "_HasPrize", false)
