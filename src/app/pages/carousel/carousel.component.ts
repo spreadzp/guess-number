@@ -1,4 +1,5 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-carousel',
   templateUrl: './carousel.component.html',
@@ -14,7 +15,7 @@ export class CarouselComponent implements OnInit {
   };
   selected = -1;
 @Output() carouselMessage = new EventEmitter<string>();
-  constructor() { }
+  constructor(private router: Router) { }
 
   ngOnInit(): void {
     this.games = [
@@ -58,6 +59,7 @@ export class CarouselComponent implements OnInit {
     this.selectedIcon = game.name;
     // this.carouselMessage.emit(game.name);
     this.filters.genre = game.name;
+    this.router.navigateByUrl('/game');
     // this.store.dispatch([new FilterGames(this.filters)]);
   }
 }
